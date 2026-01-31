@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>News 24x7 | Breaking News Portal</title>
+    <style>
+        :root {
+            --primary-red: #e31e24;
+            --dark-bg: #121212;
+            --card-bg: #ffffff;
+            --text-main: #222;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+
+        body { background-color: #f0f2f5; color: var(--text-main); }
+
+        /* Professional Header */
+        .header {
+            background: var(--dark-bg);
+            color: white;
+            padding: 12px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 4px solid var(--primary-red);
+        }
+
+        .logo-box { display: flex; align-items: center; gap: 10px; }
+        .live-dot { height: 12px; width: 12px; background: var(--primary-red); border-radius: 50%; animation: blink 1s infinite; }
+        .logo-text { font-size: 24px; font-weight: 900; letter-spacing: 1px; }
+        .logo-text span { color: var(--primary-red); }
+
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+
+        /* Menu Button */
+        .menu-btn {
+            background: none; border: none; cursor: pointer;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .menu-btn span { width: 30px; height: 3px; background: white; transition: 0.3s; border-radius: 5px; }
+
+        /* Full Screen Overlay Menu */
+        .menu-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.98); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 999;
+        }
+        .menu-overlay.active { display: flex; }
+
+        .category-list { list-style: none; text-align: center; }
+        .category-list li { margin: 20px 0; }
+        .category-list a {
+            color: white; text-decoration: none; font-size: 2rem;
+            font-weight: 700; transition: 0.3s; text-transform: uppercase;
+        }
+        .category-list a:hover { color: var(--primary-red); transform: scale(1.1); }
+
+        /* News Layout */
+        .container { max-width: 1200px; margin: 25px auto; padding: 0 15px; }
+        .section-title {
+            border-left: 5px solid var(--primary-red);
+            padding-left: 15px; margin-bottom: 25px;
+            font-size: 24px; font-weight: bold;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .news-card {
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: 0.3s ease;
+            cursor: pointer;
+        }
+        .news-card:hover { transform: translateY(-8px); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        
+        .img-container { width: 100%; height: 180px; background: #eee; overflow: hidden; }
+        .news-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .news-card:hover .news-img { transform: scale(1.1); }
+
+        .news-info { padding: 18px; }
+        .news-info .cat-tag { color: var(--primary-red); font-size: 12px; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .news-info h3 { font-size: 17px; line-height: 1.5; margin-bottom: 10px; font-weight: 700; color: #111; }
+        .news-info p { color: #555; font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* Modal / Scroll Lock */
+        .no-scroll { overflow: hidden; height: 100vh; }
+
+        @media (max-width: 600px) {
+            .logo-text { font-size: 20px; }
+            .section-title { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo-box">
+            <div class="live-dot"></div>
+            <div class="logo-text">NEWS<span>24x7</span></div>
+        </div>
+        <button class="menu-btn" id="menuBtn">
+            <span></span><span></span><span></span>
+        </button>
+    </header>
+
+    <div class="menu-overlay" id="menuOverlay">
+        <ul class="category-list">
+            <li><a href="#">Electronics</a></li>
+            <li><a href="#">Politics</a></li>
+            <li><a href="#">Technology</a></li>
+            <li><a href="#">Business</a></li>
+            <li><a href="#">Sports</a></li>
+            <li><a href="msg.html">Entertainment</a></li>
+        </ul>
+    </div>
+
+    <main class="container">
+        <h2 class="section-title">Latest Headlines</h2>
+        <div class="news-grid" id="newsGrid">
+            </div>
+    </main>
+
+    <script>
+        const menuBtn = document.getElementById('menuBtn');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const body = document.body;
+        const newsGrid = document.getElementById('newsGrid');
+
+        // Toggle Menu
+        function toggleMenu() {
+            const isOpen = menuOverlay.classList.toggle('active');
+            body.classList.toggle('no-scroll', isOpen);
+        }
+
+        menuBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleMenu();
+        });
+
+        // Close on outside click
+        menuOverlay.addEventListener('click', (e) => {
+            if (e.target === menuOverlay) toggleMenu();
+        });
+
+        // Loop to generate 50 News items
+        const categories = ["Tech", "Business", "Global", "Style", "Science"];
+        const titles = [
+            "Badi Khabar: Nayi Technology ne machaya dhamaal",
+            "Market Update: Sensex mein aayi badi uchal",
+            "Sports: Bharat ne jita romanchak muqabla",
+            "Gadget Review: Launch hua sabse sasta smartphone",
+            "Space News: Mars par mila paani ka naya srot"
+        ];
+
+        for (let i = 1; i <= 50; i++) {
+            const randomCat = categories[Math.floor(Math.random() * categories.length)];
+            const randomTitle = titles[Math.floor(Math.random() * titles.length)];
+            // Unsplash se random image fetch karne ke liye (i ke saath unique banti hai)
+            const imgUrl = `https://picsum.photos/seed/${i+10}/500/300`;
+
+            const card = `
+                <div class="news-card">
+                    <div class="img-container">
+                        <img src="${imgUrl}" class="news-img" alt="news">
+                    </div>
+                    <div class="news-info">
+                        <span class="cat-tag">${randomCat}</span>
+                        <h3>#${i} - ${randomTitle}</h3>
+                        <p>Duniya bhar ki taja khabrein sabse pehle yahan. News 24x7 aapko rakhta hai har pal update. Is khabar ki puri jankari ke liye click karein...</p>
+                    </div>
+                </div>
+            `;
+            newsGrid.innerHTML += card;
+        }
+
+        // Close when a link is clicked
+        document.querySelectorAll('.category-list a').forEach(link => {
+            link.addEventListener('click', () => {
+                menuOverlay.classList.remove('active');
+                body.classList.remove('no-scroll');
+            });
+        });
+
+        // Reset on Back Button
+        window.addEventListener('pageshow', () => {
+            menuOverlay.classList.remove('active');
+            body.classList.remove('no-scroll');
+        });
+    </script>
+</body>
+</html>
